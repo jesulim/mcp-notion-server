@@ -335,7 +335,7 @@ export async function startServer(
   });
 
   // Create SSE transport and connect server
-  const transport = new SseServerTransport();
+  const transport = new SSEServerTransport();
   app.use('/mcp', transport.handler);
 
   // Start the HTTP server
