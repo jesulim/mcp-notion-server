@@ -336,7 +336,13 @@ export async function startServer(
 
   // Create SSE transport and connect server
   const transport = new SSEServerTransport();
-  app.use('/mcp', transport.handler);
+
+  // Try one of these alternatives:
+  app.use('/mcp', transport.createHandler()); // If the transport provides a createHandler method
+  // OR
+  app.use('/mcp', (req, res, next) => transport.handleRequest(req, res, next)); // If it provides a handleRequest method
+  // OR
+  transport.applyMiddleware(app, '/mcp'); // If it provides an applyMiddleware method
 
   // Start the HTTP server
   app.listen(port, () => {
