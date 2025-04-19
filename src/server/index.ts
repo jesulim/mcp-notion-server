@@ -1,9 +1,9 @@
 /**
- * MCP server setup and request handling
+ * MCP server setup and request handling with SSE transport
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
+import { SseServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequest,
   CallToolRequestSchema,
@@ -13,15 +13,24 @@ import { NotionClientWrapper } from "../client/index.js";
 import { filterTools } from "../utils/index.js";
 import * as schemas from "../types/schemas.js";
 import * as args from "../types/args.js";
+import express from "express";
+import cors from "cors";
 
 /**
- * Start the MCP server
+ * Start the MCP server with SSE transport
  */
 export async function startServer(
   notionToken: string,
   enabledToolsSet: Set<string>,
-  enableMarkdownConversion: boolean
+  enableMarkdownConversion: boolean,
+  port: number = 3000
 ) {
+  // Create Express app
+  const app = express();
+  app.use(cors());
+  app.use(express.json());
+
+  // Create MCP server
   const server = new Server(
     {
       name: "Notion MCP Server",
@@ -325,6 +334,23 @@ export async function startServer(
     };
   });
 
-  const transport = new StdioServerTransport();
+  // Create SSE transport and connect server
+  const transport = new SseServerTransport(app, '/mcp');
+
+  // Start the HTTP server
+  app.listen(port, () => {
+    console.log(`MCP Server with SSE running on http://localhost:${port}/mcp`);
+  });
+
+  // Add a simple status endpoint
+  app.get('/status', (req, res) => {
+    res.json({ status: 'MCP Server running', version: '1.0.0' });
+  });
+
+  // Connect the server to the transport
   await server.connect(transport);
+  
+  console.log(`Notion MCP Server started with SSE transport on port ${port}`);
+  
+  return app;
 }
