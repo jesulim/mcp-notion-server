@@ -3,7 +3,7 @@
  */
 
 import { Server } from "@modelcontextprotocol/sdk/server/index.js";
-import { SseServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
+import { SSEServerTransport } from "@modelcontextprotocol/sdk/server/sse.js";
 import {
   CallToolRequest,
   CallToolRequestSchema,
@@ -335,7 +335,7 @@ export async function startServer(
   });
 
   // Create SSE transport and connect server
-  const transport = new SseServerTransport(app, '/mcp');
+  const transport = new SSEServerTransport(app, '/mcp');
 
   // Start the HTTP server
   app.listen(port, () => {
